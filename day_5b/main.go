@@ -51,7 +51,10 @@ func main() {
 		tokens := strings.Split(line, ",")
 		lineFixed := false
 
-		for curIdx, curPg := range tokens {
+		for curIdx := 0; curIdx < len(tokens); curIdx++ {
+			curPg := tokens[curIdx]
+			// fmt.Printf("i=%d (%s) : %s\n", curIdx, curPg, strings.Join(tokens, ", "))
+
 			if curIdx == 0 {
 				visited[curPg] = curIdx
 				continue
@@ -64,29 +67,29 @@ func main() {
 				continue
 			}
 
-			badPg := ""
-			prevOccurIdx := -1
 			ruleValues := rules[curPg].ToSlice()
 			swapped := false
 			for _, v := range ruleValues {
 				if visitedIdx, found := visited[v]; found {
-					badPg = v
-					prevOccurIdx = visitedIdx
-					fmt.Printf("rule break: %s encountered before %s! swapping...\n", badPg, curPg)
+					badPg := v
+					fmt.Printf("rule break: %s encountered after %s! swapping...\n", curPg, badPg)
 
 					// swap tokens
 					tokens[visitedIdx] = curPg
 					tokens[curIdx] = badPg
-					// swap visited idx
-					visited[badPg] = curIdx
-					visited[curPg] = prevOccurIdx
+					// reset visited
+					for k := range visited {
+						delete(visited, k)
+					}
 					
 					swapped = true
 					lineFixed = true
-					// break
+					break
 				}
 			}
-			if !swapped {
+			if swapped {
+				curIdx = -1
+			} else {
 				visited[curPg] = curIdx
 			}
 		}
